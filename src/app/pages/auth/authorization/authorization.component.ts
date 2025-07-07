@@ -1,39 +1,46 @@
-import { Component, OnInit } from '@angular/core'
-import {AuthService} from "../../../services/auth/auth.service";
-import {IUser} from "../../../models/users";
-import {MessageService} from "primeng/api";
+import { Component, OnInit } from '@angular/core';
+import { AuthService } from '../../../services/auth/auth.service';
+import { IUser } from '../../../models/users';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-authorization',
   templateUrl: './authorization.component.html',
   styleUrls: ['./authorization.component.scss'],
 })
-
 export class AuthorizationComponent implements OnInit {
   login: string;
   password: string;
   cardNumber: string = '';
   isRememberMe: boolean;
   isHaveCard: boolean;
-  constructor(private authService: AuthService, private messageService: MessageService) { }
+  constructor(
+    private authService: AuthService,
+    private messageService: MessageService
+  ) {}
 
-    ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
-  ngOnDestroy(): void {
-
-  }
+  ngOnDestroy(): void {}
 
   onAuth(): void {
     const user: IUser = {
+      id: '',
       login: this.login,
-      password: this.password,
-    }
-    const result = this.authService.authUser(this.login, this.password, this.isRememberMe);
-    if (result !== true) {
-      this.messageService.add({severity:'error', summary: result});
-      return;
-    }
-    this.messageService.add({severity:'success', summary: 'You are authorized!'});
+      psw: this.password,
+      cardNumber: this.cardNumber,
+      email: '',
+    };
+    this.authService.authUserOnServer(user).subscribe(
+      (data) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Вы авторизованы!',
+        });
+      },
+      (err) => {
+        this.messageService.add({ severity: 'warn', summary: 'Ошибка' });
+      }
+    );
   }
 }

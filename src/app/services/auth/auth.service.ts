@@ -1,14 +1,15 @@
-import {Injectable} from '@angular/core';
-import {IUser} from "../../models/users";
-import {Router} from "@angular/router";
-import {UserAccessService} from "../user-access/user-access.service";
-import {UserRules} from "../../shared/mock/rules";
-import {BehaviorSubject, Subject} from "rxjs";
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { IUser } from '../../models/users';
+import { Router } from '@angular/router';
+import { UserAccessService } from '../user-access/user-access.service';
+import { UserRules } from '../../shared/mock/rules';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 export const LOCAL_STORAGE_NAME = 'currentUser';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private userSubject = new Subject();
@@ -24,13 +25,15 @@ export class AuthService {
 
   constructor(
     private router: Router,
-    private accessService: UserAccessService
+    private accessService: UserAccessService,
+    private http: HttpClient
   ) {
-
-    const storedUser: IUser | null = JSON.parse(localStorage.getItem(LOCAL_STORAGE_NAME) || 'null');
+    const storedUser: IUser | null = JSON.parse(
+      localStorage.getItem(LOCAL_STORAGE_NAME) || 'null'
+    );
     if (storedUser) {
-     //this.userStorage.push(storedUser);
-     this.auth(storedUser)
+      //this.userStorage.push(storedUser);
+      this.auth(storedUser);
     }
   }
 
@@ -39,7 +42,7 @@ export class AuthService {
   }
 
   private auth(user: IUser, isRememberMe?: boolean) {
-    console.log('user', user)
+    console.log('user', user);
     this.currentUser = user;
     this.accessService.initAccess(UserRules);
 
@@ -55,7 +58,7 @@ export class AuthService {
   }
 
   addBasketToSubject(): void {
-    this.userBasketSubject.next('basket' +  Math.random());
+    this.userBasketSubject.next('basket' + Math.random());
   }
 
   setUser(user: IUser): void {
@@ -67,13 +70,12 @@ export class AuthService {
     this.router.navigate(['tickets']);
   }
 
-  get isAuthenticated(): boolean  {
+  get isAuthenticated(): boolean {
     return !!this.currentUser || !!localStorage.getItem(LOCAL_STORAGE_NAME);
   }
-  get isUserInStore(): boolean  {
+  get isUserInStore(): boolean {
     return !!localStorage.getItem(LOCAL_STORAGE_NAME);
   }
-
 
   get user(): IUser | null {
     return this.currentUser;
@@ -83,15 +85,19 @@ export class AuthService {
     return this.isAuthenticated ? 'my-token' : null;
   }
 
-  authUser(login: string, password: string, isRememberMe: boolean): true | string {
+  authUser(
+    login: string,
+    password: string,
+    isRememberMe: boolean
+  ): true | string {
     const user = this.getUser(login);
     if (!user) {
       return 'User not found';
     }
-    if (user.password !== password) {
+    if (user.psw !== password) {
       return 'Wrong password';
     }
-    this.authAndRedirect(user, isRememberMe)
+    this.authAndRedirect(user, isRememberMe);
     return true;
   }
 
@@ -100,12 +106,14 @@ export class AuthService {
       return 'User already exists';
     }
     this.userStorage.push(user);
-    this.authAndRedirect(user, isRememberMe)
+    this.authAndRedirect(user, isRememberMe);
     return true;
   }
 
   logout() {
-    this.userStorage = this.userStorage.filter(({login}) => login === this.currentUser?.login);
+    this.userStorage = this.userStorage.filter(
+      ({ login }) => login === this.currentUser?.login
+    );
     this.currentUser = null;
     localStorage.removeItem(LOCAL_STORAGE_NAME);
     this.router.navigate(['auth']);
@@ -113,10 +121,23 @@ export class AuthService {
 
   changePassword(password: string) {
     if (!this.currentUser) {
-      return
+      return;
     }
-    this.currentUser.password = password;
-    const dbUser = this.userStorage.find(({login}) => login === this.currentUser?.login)!;
-    dbUser.password = password
+    this.currentUser.psw = password;
+    const dbUser = this.userStorage.find(
+      ({ login }) => login === this.currentUser?.login
+    )!;
+    dbUser.psw = password;
+  }
+
+  registerUserOnServer(user: IUser) {
+    return this.http.post<IUser>('http://localhost:3000/users/', user);
+  }
+
+  authUserOnServer(authUser: IUser) {
+    return this.http.post<IUser>(
+      'http://localhost:3000/users/' + authUser.login,
+      authUser
+    );
   }
 }

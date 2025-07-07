@@ -1,14 +1,58 @@
 <div class="p-inputgroup px-3">
-  <input type="text" pInputText placeholder="Search" [(ngModel)]="search" #ticketSearch/>
-  <span class="p-inputgroup-addon">{{filteredTickets.length}} showed</span>
-  <span class="p-inputgroup-addon">idx {{blockDirective.activeIndex}} is active</span>
+  <input
+    type="text"
+    pInputText
+    placeholder="Search"
+    [(ngModel)]="search"
+    #ticketSearch
+  />
+  <span class="p-inputgroup-addon">{{ filteredTickets.length }} showed</span>
+  <span class="p-inputgroup-addon"
+    >idx {{ blockDirective.activeIndex }} is active</span
+  >
 </div>
 <div [formGroup]="inputForm">
-  Reactive form <input type="text" pInputText placeholder="Search" formControlName="inputControl"/>
+  Reactive form
+  <input
+    type="text"
+    pInputText
+    placeholder="Search"
+    formControlName="inputControl"
+  />
+</div>
+
+<button
+  pButton
+  type="button"
+  label="Добавить тур"
+  (click)="openAddTour()"
+></button>
+
+<div *ngIf="showTourForm" class="tour-form">
+  <form [formGroup]="tourForm" (ngSubmit)="saveTour()">
+    <input pInputText formControlName="name" placeholder="Название" required />
+    <input pInputText formControlName="description" placeholder="Описание" />
+    <input pInputText formControlName="tourOperator" placeholder="Оператор" />
+    <input pInputText formControlName="price" placeholder="Цена" />
+    <input
+      pInputText
+      formControlName="img"
+      placeholder="Картинка (имя файла)"
+    />
+    <input pInputText formControlName="type" placeholder="Тип" />
+    <input pInputText formControlName="date" placeholder="Дата" />
+    <button pButton type="submit" label="Сохранить"></button>
+    <button
+      pButton
+      type="button"
+      label="Отмена"
+      (click)="showTourForm = false"
+    ></button>
+  </form>
 </div>
 
 <div
-  #blockDirective='blockStyle'
+  #blockDirective="blockStyle"
   class="d-flex flex-wrap justify-content-around align-items-stretch"
   appBlockStyle
   [selector]="'.ticket-item'"
@@ -17,19 +61,30 @@
 >
   <div
     class="m-2 col-3 ticket-item align-self-stretch"
-    *ngFor="let item of filteredTickets"
+    *ngFor="let item of tours"
   >
     <p-card
-      header="{{item.name}}"
-      subheader="{{item.price}}"
+      header="{{ item.name }}"
+      subheader="{{ item.price }}"
       styleClass="p-card-shadow"
       (click)="goToTicket(item)"
     >
       <ng-template pTemplate="header">
-        <img alt="Card" src="/assets/img/{{item.img}}">
+        <img alt="Card" src="/assets/img/{{ item.img }}" />
       </ng-template>
-      <p>{{item.description}}</p>
+      <p>{{ item.description }}</p>
+      <button
+        pButton
+        type="button"
+        label="Редактировать"
+        (click)="$event.stopPropagation(); openEditTour(item)"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Удалить"
+        (click)="$event.stopPropagation(); deleteTour(item)"
+      ></button>
     </p-card>
-
   </div>
 </div>
