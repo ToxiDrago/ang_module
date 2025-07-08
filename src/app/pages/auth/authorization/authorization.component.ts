@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../services/auth/auth.service';
 import { IUser } from '../../../models/users';
 import { MessageService } from 'primeng/api';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-authorization',
@@ -16,7 +17,8 @@ export class AuthorizationComponent implements OnInit {
   isHaveCard: boolean;
   constructor(
     private authService: AuthService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {}
@@ -25,20 +27,24 @@ export class AuthorizationComponent implements OnInit {
 
   onAuth(): void {
     const user: IUser = {
-      id: '',
       login: this.login,
       psw: this.password,
       cardNumber: this.cardNumber,
       email: '',
     };
-    this.authService.authUserOnServer(user).subscribe(
+    this.authService.loginOnServer(user).subscribe(
       (data) => {
+        console.log('Login successful, token received:', data);
+        this.authService.saveToken(data.access_token);
         this.messageService.add({
           severity: 'success',
           summary: 'Вы авторизованы!',
         });
+        console.log('About to navigate to tickets/ticket-list');
+        this.router.navigate(['tickets', 'ticket-list']);
       },
       (err) => {
+        console.error('Login error:', err);
         this.messageService.add({ severity: 'warn', summary: 'Ошибка' });
       }
     );

@@ -1,21 +1,12 @@
 <app-orders-header></app-orders-header>
 
-<p-treeTable [value]="tableData$ | async">
-  <ng-template pTemplate="header">
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Type</th>
-    </tr>
-  </ng-template>
-  <ng-template pTemplate="body" let-rowNode let-rowData=rowData>
-    <tr>
-      <td>
-        <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
-        {{rowData.name}}
-      </td>
-      <td>{{rowData.description}}</td>
-      <td>{{rowData.type}}</td>
-    </tr>
-  </ng-template>
-</p-treeTable>
+<ul *ngIf="orders$ | async as orders">
+  <li *ngFor="let order of orders">
+    <strong>Пользователь:</strong> {{ order.userId }}<br />
+    <strong>Тур:</strong> {{ order.tourId }}<br />
+    <strong>Возраст:</strong> {{ order.age }}<br />
+    <strong>Дата рождения:</strong> {{ order.birthDay }}<br />
+    <strong>Карта:</strong> {{ order.cardNumber }}<br />
+    <strong>ID:</strong> {{ order._id }}
+  </li>
+</ul>

@@ -42,4 +42,18 @@ export class UsersService {
   async checkRegUser(login: string): Promise<User[]> {
     return this.userModel.find({ login });
   }
+
+  private refreshTokens: { [userId: string]: string } = {};
+
+  saveRefreshToken(userId: string, token: string) {
+    this.refreshTokens[userId] = token;
+  }
+
+  getRefreshToken(userId: string): string | undefined {
+    return this.refreshTokens[userId];
+  }
+
+  removeRefreshToken(userId: string) {
+    delete this.refreshTokens[userId];
+  }
 }

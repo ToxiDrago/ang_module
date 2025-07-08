@@ -6,9 +6,9 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema()
 export class User implements IUser {
-  @Prop() id: string;
-  @Prop() login: string;
-  @Prop() psw: string;
+  _id?: string;
+  @Prop({ required: true, unique: true }) login: string;
+  @Prop({ required: true }) psw: string;
   @Prop() cardNumber: string;
   @Prop() email: string;
 }

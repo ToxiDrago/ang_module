@@ -1,0 +1,52 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist/out-tsc",
+    "module": "commonjs",
+    "target": "ES2020",
+    "lib": ["es2020"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "strictNullChecks": false,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "strictPropertyInitialization": false,
+    "typeRoots": ["./src/types", "./node_modules/@types"]
+  },
+  "include": [
+    "src/backend.main.ts",
+    "src/simple-backend.main.ts",
+    "src/app/backend-app.module.ts",
+    "src/app/simple-app.module.ts",
+    "src/app/simple.controller.ts",
+    "src/app/controllers/**/*",
+    "src/app/backend-services/**/*",
+    "src/app/auth/**/*",
+    "src/app/pipes/**/*",
+    "src/app/dto/**/*",
+    "src/app/shemas/**/*",
+    "src/app/orders.module.ts"
+  ],
+  "exclude": [
+    "src/main.ts",
+    "src/app/app.module.ts",
+    "src/app/app.component.ts",
+    "src/app/pages/**/*",
+    "src/app/shared/**/*",
+    "src/app/directive/**/*",
+    "src/app/models/**/*",
+    "src/environments/**/*",
+    "src/polyfills.ts",
+    "src/test.ts",
+    "src/**/*.spec.ts"
+  ]
+} 

@@ -1,4 +1,12 @@
 <div class="h-100">
+  <div
+    *ngIf="isAuthenticated"
+    class="d-flex justify-content-end align-items-center p-2 bg-light"
+  >
+    <span class="me-3">Пользователь: {{ currentUser?.login }}</span>
+    <button class="btn btn-outline-danger btn-sm" (click)="logout()">
+      Выйти
+    </button>
+  </div>
   <router-outlet></router-outlet>
 </div>
-

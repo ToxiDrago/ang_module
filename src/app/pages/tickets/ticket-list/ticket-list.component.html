@@ -28,6 +28,13 @@
   (click)="openAddTour()"
 ></button>
 
+<button
+  pButton
+  type="button"
+  label="Сгенерировать туры"
+  (click)="generateTours()"
+></button>
+
 <div *ngIf="showTourForm" class="tour-form">
   <form [formGroup]="tourForm" (ngSubmit)="saveTour()">
     <input pInputText formControlName="name" placeholder="Название" required />

@@ -1,22 +1,30 @@
-import {Injectable} from '@angular/core';
-import {TicketRestService} from "../ticket-rest/ticket-rest.service";
-import {BehaviorSubject, map, Observable, Subject} from "rxjs";
-import {INearestTour, ITour, ITourLocation, ITourTypeSelect} from "../../models/tours";
+import { Injectable } from '@angular/core';
+import { TicketRestService } from '../ticket-rest/ticket-rest.service';
+import { BehaviorSubject, map, Observable, Subject } from 'rxjs';
+import {
+  INearestTour,
+  ITour,
+  ITourLocation,
+  ITourTypeSelect,
+} from '../../models/tours';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TicketService {
-  private ticketSubject = new Subject<ITourTypeSelect>()
-  readonly $ticketType = this.ticketSubject.asObservable()
+  private ticketSubject = new Subject<ITourTypeSelect>();
+  readonly $ticketType = this.ticketSubject.asObservable();
+  private ticketUpdateSubject = new Subject<ITour[]>();
+  readonly ticketUpdateSubject$ = this.ticketUpdateSubject.asObservable();
 
-  constructor(private ticketServiceRest: TicketRestService) {
-  }
+  constructor(public ticketServiceRest: TicketRestService) {}
 
   getTickets(): Observable<ITour[]> {
-    return this.ticketServiceRest.getTickets().pipe(map((items) => {
-      return items.concat(items.filter(({type}) => type === 'single'));
-    }));
+    return this.ticketServiceRest.getTickets().pipe(
+      map((items) => {
+        return items.concat(items.filter(({ type }) => type === 'single'));
+      })
+    );
   }
 
   getTicketTypeObservable() {
@@ -25,6 +33,10 @@ export class TicketService {
 
   updateTour(type: ITourTypeSelect) {
     this.ticketSubject.next(type);
+  }
+
+  updateTicketList(data: ITour[]) {
+    this.ticketUpdateSubject.next(data);
   }
 
   getError() {
@@ -48,14 +60,17 @@ export class TicketService {
     data.forEach((e) => {
       newTicketData.push({
         ...e,
-        region: tourLocations.find((region) => e.locationId === region.id)
-      })
+        region: tourLocations.find((region) => e.locationId === region.id),
+      });
     });
     return newTicketData;
   }
 
   sendTourData(data: any) {
-    return this.ticketServiceRest.sendTourData(data)
+    return this.ticketServiceRest.sendTourData(data);
+  }
+
+  getTicketById(id: string) {
+    return this.ticketServiceRest.getTicketById(id);
   }
 }
-

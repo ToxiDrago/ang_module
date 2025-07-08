@@ -1,5 +1,5 @@
 # Start your image with a node base image
-FROM node:18-alpine as build
+FROM node:20-alpine as build
 
 # The /app directory should act as the main application directory
 WORKDIR /app
@@ -11,8 +11,8 @@ COPY package*.json ./
 
 
 # Install node packages, install serve, build the app, and remove dependencies at the end
-RUN npm install \
-     && npm install -g serve
+RUN npm install --legacy-peer-deps \
+  && npm install -g serve
 
 COPY . /app
 RUN npm run build

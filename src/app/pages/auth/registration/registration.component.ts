@@ -4,6 +4,7 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { IUser } from '../../../models/users';
 import { ConfigService } from '../../../services/config/config.service';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-registration',
@@ -21,7 +22,8 @@ export class RegistrationComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -39,7 +41,6 @@ export class RegistrationComponent implements OnInit {
       return;
     }
     const user: IUser = {
-      id: '',
       login: this.login,
       psw: this.password,
       cardNumber: this.cardNumber,
@@ -51,13 +52,13 @@ export class RegistrationComponent implements OnInit {
           severity: 'success',
           summary: 'Регистрация прошла успешно',
         });
-        // Сразу авторизуем пользователя и делаем редирект
         this.authService.authUserOnServer(user).subscribe(
           () => {
-            // редирект на tickets/tickets-list
-            (this as any).router.navigate(['tickets/tickets-list']);
+            console.log('Redirecting to tickets/ticket-list');
+            this.router.navigate(['tickets', 'ticket-list']);
           },
-          () => {
+          (authErr) => {
+            console.error('Ошибка авторизации после регистрации', authErr);
             this.messageService.add({
               severity: 'warn',
               summary: 'Ошибка авторизации после регистрации',
@@ -65,7 +66,8 @@ export class RegistrationComponent implements OnInit {
           }
         );
       },
-      (err) => {
+      (regErr) => {
+        console.error('Ошибка регистрации', regErr);
         this.messageService.add({
           severity: 'warn',
           summary: 'Пользователь уже зарегистрирован',

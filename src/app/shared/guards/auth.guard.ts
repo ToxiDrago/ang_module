@@ -1,35 +1,32 @@
 import { Injectable } from '@angular/core';
-import {ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree} from '@angular/router';
-import {delay, Observable, of, switchMap} from 'rxjs';
-import {AuthService} from "../../services/auth/auth.service";
-import {UserAccessService} from "../../services/user-access/user-access.service";
-import {IUserRules} from "../mock/rules";
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  Router,
+  RouterStateSnapshot,
+  UrlTree,
+} from '@angular/router';
+import { AuthService } from '../../services/auth/auth.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-  constructor(private authService: AuthService, private router: Router, private accessService: UserAccessService) {
-  }
+  constructor(private authService: AuthService, private router: Router) {}
+
   canActivate(
     route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    if (!this.authService.isAuthenticated) {
-      this.router.navigate(['/auth']);
-      return false;
-    } else {
-      return this.accessService.getUserRules().pipe(
-        delay(200),
-        switchMap((roles) => {
-          if (Array.isArray(roles) && roles.length > 0) {
-            this.accessService.initAccess(roles);
-            return of(true);
-          } else {
-            return of (false);
-          }
-        })
-      );
+    state: RouterStateSnapshot
+  ): boolean | UrlTree {
+    console.log('AuthGuard: checking access to', state.url);
+    this.authService.checkTokenAndLogoutIfExpired(true);
+    const token = this.authService.getToken();
+    console.log('AuthGuard: token exists?', !!token);
+    if (!token) {
+      console.log('AuthGuard: no token, redirecting to /auth');
+      return this.router.createUrlTree(['/auth']);
     }
+    console.log('AuthGuard: access granted');
+    return true;
   }
-
 }

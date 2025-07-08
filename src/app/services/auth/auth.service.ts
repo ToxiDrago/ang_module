@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { UserAccessService } from '../user-access/user-access.service';
 import { UserRules } from '../../shared/mock/rules';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
+import { MessageService } from 'primeng/api';
 
 export const LOCAL_STORAGE_NAME = 'currentUser';
 
@@ -23,16 +25,21 @@ export class AuthService {
   private userBasketSubject = new Subject();
   basket$ = this.userBasketSubject.asObservable();
 
+  private basketItems: any[] = [];
+
+  private readonly TOKEN_KEY = 'jwt_token';
+
   constructor(
     private router: Router,
     private accessService: UserAccessService,
-    private http: HttpClient
+    private http: HttpClient,
+    private messageService: MessageService
   ) {
     const storedUser: IUser | null = JSON.parse(
       localStorage.getItem(LOCAL_STORAGE_NAME) || 'null'
     );
     if (storedUser) {
-      //this.userStorage.push(storedUser);
+      this.userStorage.push(storedUser); // <--- добавляем пользователя в userStorage
       this.auth(storedUser);
     }
   }
@@ -58,7 +65,9 @@ export class AuthService {
   }
 
   addBasketToSubject(): void {
-    this.userBasketSubject.next('basket' + Math.random());
+    const newItem = { id: Date.now(), user: this.currentUser };
+    this.basketItems.push(newItem);
+    this.userBasketSubject.next([...this.basketItems]);
   }
 
   setUser(user: IUser): void {
@@ -67,7 +76,7 @@ export class AuthService {
 
   private authAndRedirect(user: IUser, isRememberMe?: boolean) {
     this.auth(user, isRememberMe);
-    this.router.navigate(['tickets']);
+    this.router.navigate(['tickets', 'ticket-list']);
   }
 
   get isAuthenticated(): boolean {
@@ -110,12 +119,31 @@ export class AuthService {
     return true;
   }
 
+  loginOnServer(user: IUser) {
+    return this.http.post<{ access_token: string }>(
+      'http://localhost:3000/auth/login',
+      user
+    );
+  }
+
+  saveToken(token: string) {
+    console.log('Saving token:', token);
+    localStorage.setItem(this.TOKEN_KEY, token);
+  }
+
+  getToken(): string | null {
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    console.log('Getting token:', token);
+    return token;
+  }
+
   logout() {
     this.userStorage = this.userStorage.filter(
       ({ login }) => login === this.currentUser?.login
     );
     this.currentUser = null;
     localStorage.removeItem(LOCAL_STORAGE_NAME);
+    localStorage.removeItem(this.TOKEN_KEY);
     this.router.navigate(['auth']);
   }
 
@@ -131,13 +159,51 @@ export class AuthService {
   }
 
   registerUserOnServer(user: IUser) {
-    return this.http.post<IUser>('http://localhost:3000/users/', user);
+    return this.http.post<IUser>('http://localhost:3000/auth/register', user);
   }
 
   authUserOnServer(authUser: IUser) {
-    return this.http.post<IUser>(
-      'http://localhost:3000/users/' + authUser.login,
-      authUser
-    );
+    return this.http.post<IUser>('http://localhost:3000/auth/login', authUser);
+  }
+
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) {
+      console.log('isTokenExpired: no token');
+      return true;
+    }
+    try {
+      const decoded: any = jwtDecode(token);
+      console.log('isTokenExpired: decoded token:', decoded);
+      if (!decoded.exp) {
+        console.log('isTokenExpired: no exp field');
+        return false;
+      }
+      const now = Math.floor(Date.now() / 1000);
+      console.log(
+        'isTokenExpired: current time:',
+        now,
+        'exp time:',
+        decoded.exp
+      );
+      const isExpired = decoded.exp < now;
+      console.log('isTokenExpired: token expired?', isExpired);
+      return isExpired;
+    } catch (e) {
+      console.error('isTokenExpired: error decoding token:', e);
+      return true;
+    }
+  }
+
+  checkTokenAndLogoutIfExpired(showMessage = false) {
+    if (this.isTokenExpired()) {
+      if (showMessage) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Сессия истекла. Пожалуйста, войдите снова.',
+        });
+      }
+      this.logout();
+    }
   }
 }

@@ -1,65 +1,36 @@
-import {Injectable} from '@angular/core';
-import {BehaviorSubject, map, of, switchAll, switchMap, withLatestFrom} from "rxjs";
-import {ORDERMOCK, TOrder, TOrderProps} from "../../shared/mock/orders";
-import {TreeNode} from "primeng/api";
-import {TicketRestService} from "../ticket-rest/ticket-rest.service";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { IOrder } from '../../models/orders';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class OrdersService {
-  private groupOrders = new BehaviorSubject(false);
-  readonly groupOrders$ = this.groupOrders.asObservable();
+  private apiUrl = 'http://localhost:3000/orders';
+  private groupOrdersSubject = new BehaviorSubject<boolean>(false);
 
-  constructor(
-    private ticketServiceRest: TicketRestService
-  ) {
+  constructor(private http: HttpClient) {}
+
+  getOrders(): Observable<IOrder[]> {
+    return this.http.get<IOrder[]>(this.apiUrl);
   }
 
-  getOrders() {
-    return of(ORDERMOCK).pipe(
-      withLatestFrom(this.groupOrders$),
-      switchMap(([orders, group]) => {
-        return of(orders).pipe(
-          map((data) => ([this.transformOrderData(data, group)]))
-        )
-      })
-    )
+  getOrderById(id: string): Observable<IOrder> {
+    return this.http.get<IOrder>(`${this.apiUrl}/${id}`);
   }
 
-  initGroupOrder(val: boolean) {
-    this.groupOrders.next(val);
+  createOrder(order: IOrder): Observable<IOrder> {
+    return this.http.post<IOrder>(this.apiUrl, order);
   }
 
-  transformOrderData(data: TOrder[], group: boolean, groupBy: TOrderProps = 'name' as TOrderProps) {
-    const treeNodeObj: TreeNode = {
-      children: [],
-      data: {
-        name: 'Orders',
-      },
-      expanded: true,
-    }
-    if (!data?.length) {
-      return <TreeNode<TOrder[]>>[]
-    }
-    if (group) {
-      return data.reduce((acc, cur) => {
-        const target = acc.children.find(e => e.data[groupBy] === cur[groupBy])
-
-        if (target) {
-          target.children.push({data: cur})
-        } else {
-          acc.children.push({data: {name: cur.name}, children: [{data: cur}]})
-        }
-        return acc;
-      }, treeNodeObj)
-    }
-    treeNodeObj.children = data.map(e => ({data: e}))
-    return treeNodeObj;
+  deleteOrder(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-  getRandomNearestEvent(type: number) {
-    return this.ticketServiceRest.getRandomNearestEvent(type)
+  setGroupOrders(value: boolean) {
+    this.groupOrdersSubject.next(value);
   }
 
+  getGroupOrders$() {
+    return this.groupOrdersSubject.asObservable();
+  }
 }

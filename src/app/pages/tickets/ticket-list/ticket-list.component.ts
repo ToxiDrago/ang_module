@@ -197,7 +197,16 @@ export class TicketListComponent implements OnInit {
   }
 
   loadTours() {
-    this.toursHttp.getTours().subscribe((tours) => (this.tours = tours));
+    this.ticketService.getTickets().subscribe((tours) => {
+      this.tours = tours;
+      this.ticketService.updateTicketList(tours);
+    });
+  }
+
+  generateTours() {
+    this.ticketService.ticketServiceRest
+      .generateTours()
+      .subscribe(() => this.loadTours());
   }
 
   openAddTour() {
@@ -230,7 +239,9 @@ export class TicketListComponent implements OnInit {
 
   deleteTour(tour: ITour) {
     if (confirm('Удалить тур?')) {
-      this.toursHttp.deleteTour(tour.id).subscribe(() => this.loadTours());
+      this.ticketService.ticketServiceRest
+        .deleteTours()
+        .subscribe(() => this.loadTours());
     }
   }
 
