@@ -19,7 +19,10 @@ export class AuthController {
     }
 
     // Создаем нового пользователя
-    const newUser = await this.usersService.sendUser(userDto);
+    const newUser = await this.usersService.sendUser({
+      ...userDto,
+      role: userDto.role || 'user',
+    });
 
     // Генерируем JWT токен
     const payload = { login: newUser.login, sub: newUser._id };

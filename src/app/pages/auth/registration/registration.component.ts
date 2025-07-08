@@ -27,7 +27,7 @@ export class RegistrationComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.isShowCardNumber = ConfigService.config.useUserCard;
+    this.isShowCardNumber = ConfigService.config?.useUserCard || false;
   }
 
   ngOnDestroy(): void {}

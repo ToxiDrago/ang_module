@@ -28,4 +28,14 @@ export class ToursHttpService {
   generateTours() {
     return this.http.post(`${this.apiUrl}/generate`, {});
   }
+
+  uploadTour(formData: FormData): Observable<ITour> {
+    return this.http.post<ITour>(`${this.apiUrl}/upload`, formData);
+  }
+
+  searchToursByName(name: string): Observable<ITour[]> {
+    return this.http.get<ITour[]>(
+      `${this.apiUrl}/search?name=${encodeURIComponent(name)}`
+    );
+  }
 }

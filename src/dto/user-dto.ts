@@ -14,6 +14,10 @@ export class UserDto implements IUser {
 
   @IsString()
   @IsOptional()
+  role?: string;
+
+  @IsString()
+  @IsOptional()
   cardNumber: string;
 
   @IsEmail()

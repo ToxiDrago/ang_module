@@ -1,5 +1,21 @@
 <app-orders-header></app-orders-header>
 
+<div class="pagination-controls">
+  <button pButton type="button" (click)="prevPage()" [disabled]="page === 1">
+    Назад
+  </button>
+  <span>Страница: {{ page }}</span>
+  <button pButton type="button" (click)="nextPage()">Вперед</button>
+  <span
+    >Показывать по:
+    <select [(ngModel)]="limit" (change)="setLimit(limit)">
+      <option [value]="5">5</option>
+      <option [value]="10">10</option>
+      <option [value]="20">20</option>
+    </select>
+  </span>
+</div>
+
 <ul *ngIf="orders$ | async as orders">
   <li *ngFor="let order of orders">
     <strong>Пользователь:</strong> {{ order.userId }}<br />

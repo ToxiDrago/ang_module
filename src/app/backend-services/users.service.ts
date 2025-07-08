@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../../shemas/user';
 import { UserDto } from '../../dto/user-dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -19,7 +20,9 @@ export class UsersService {
   }
 
   async sendUser(data: UserDto): Promise<User> {
-    const userData = new this.userModel(data);
+    // Хешируем пароль перед сохранением
+    const hashedPassword = await bcrypt.hash(data.psw, 10);
+    const userData = new this.userModel({ ...data, psw: hashedPassword });
     return userData.save();
   }
 
@@ -36,7 +39,10 @@ export class UsersService {
   }
 
   async checkAuthUser(login: string, psw: string): Promise<User[]> {
-    return this.userModel.find({ login, psw });
+    const users = await this.userModel.find({ login });
+    // Сравниваем хеш пароля
+    const matched = users.filter((user) => bcrypt.compareSync(psw, user.psw));
+    return matched;
   }
 
   async checkRegUser(login: string): Promise<User[]> {

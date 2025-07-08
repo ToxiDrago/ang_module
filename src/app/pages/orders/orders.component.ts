@@ -12,6 +12,8 @@ import { AuthService } from '../../services/auth/auth.service';
 export class OrdersComponent implements OnInit, OnDestroy {
   orders$: Observable<IOrder[]>;
   private _destroyer: Subscription;
+  page = 1;
+  limit = 5;
 
   constructor(
     private orderService: OrdersService,
@@ -22,14 +24,32 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.userService.user$.subscribe((data) => {
       console.log('user', data);
     });
-    this.initOrders();
+    this.loadOrders();
   }
 
   ngOnDestroy() {
     this._destroyer?.unsubscribe();
   }
 
-  initOrders() {
-    this.orders$ = this.orderService.getOrders();
+  loadOrders() {
+    this.orders$ = this.orderService.getOrdersPaged(this.page, this.limit);
+  }
+
+  nextPage() {
+    this.page++;
+    this.loadOrders();
+  }
+
+  prevPage() {
+    if (this.page > 1) {
+      this.page--;
+      this.loadOrders();
+    }
+  }
+
+  setLimit(newLimit: number) {
+    this.limit = newLimit;
+    this.page = 1;
+    this.loadOrders();
   }
 }

@@ -60,4 +60,8 @@ export class ToursService {
     await this.tourModel.deleteMany({});
     await this.tourModel.insertMany(tours);
   }
+
+  async getToursByName(name: string): Promise<Tour[]> {
+    return this.tourModel.find({ name: { $regex: name, $options: 'i' } });
+  }
 }

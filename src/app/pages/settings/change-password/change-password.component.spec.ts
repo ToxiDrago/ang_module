@@ -1,4 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { MessageService } from 'primeng/api';
 
 import { ChangePasswordComponent } from './change-password.component';
 
@@ -8,10 +12,14 @@ describe('ChangePasswordComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ChangePasswordComponent ]
-    })
-    .compileComponents();
+      imports: [ReactiveFormsModule, FormsModule, HttpClientModule],
+      declarations: [ChangePasswordComponent],
+      providers: [MessageService],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+  });
 
+  beforeEach(() => {
     fixture = TestBed.createComponent(ChangePasswordComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

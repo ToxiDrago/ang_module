@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientModule } from '@angular/common/http';
+import { CheckboxModule } from 'primeng/checkbox';
 
 import { OrdersHeaderComponent } from './orders-header.component';
 
@@ -8,10 +10,12 @@ describe('OrdersHeaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ OrdersHeaderComponent ]
-    })
-    .compileComponents();
+      imports: [HttpClientModule, CheckboxModule],
+      declarations: [OrdersHeaderComponent],
+    }).compileComponents();
+  });
 
+  beforeEach(() => {
     fixture = TestBed.createComponent(OrdersHeaderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

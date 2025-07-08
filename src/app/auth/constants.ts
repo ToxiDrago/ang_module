@@ -3,3 +3,8 @@ export const jwtConstants = {
   refreshSecret: 'refreshSecretKey456',
   refreshExpiresIn: '7d',
 };
+
+export const ROLES = {
+  USER: 'user',
+  ADMIN: 'admin',
+};

@@ -6,50 +6,84 @@ import {
   Param,
   Post,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { ToursService } from '../../backend-services/tours.service';
 import { Tour } from '../../../shemas/tour';
 import { TourDto } from '../../../dto/tour-dto';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { Request } from 'express';
 
 @Controller('tours')
 @UseGuards(JwtAuthGuard)
 export class ToursController {
   constructor(private toursService: ToursService) {}
 
-  // Генерация туров (POST /tours/generate)
   @Post('generate')
   async initTours(): Promise<void> {
     await this.toursService.generateTours();
   }
 
-  // Создание тура (POST /tours)
   @Post()
   async createTour(@Body() tourDto: TourDto): Promise<Tour> {
     return this.toursService.createTour(tourDto);
   }
 
-  // Удаление всех туров (DELETE /tours)
+  @Post('upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './public',
+        filename: (
+          req: Request,
+          file: Express.Multer.File,
+          cb: (error: Error | null, filename: string) => void
+        ) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, uniqueSuffix + extname(file.originalname));
+        },
+      }),
+    })
+  )
+  async uploadTour(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: any
+  ): Promise<Tour> {
+    const tourDto: TourDto = {
+      ...body,
+      img: file ? file.filename : '',
+    };
+    return this.toursService.createTour(tourDto);
+  }
+
   @Delete()
   async removeAllTours(): Promise<void> {
     await this.toursService.deleteTours();
   }
 
-  // Удаление тура по id (DELETE /tours/:id)
   @Delete(':id')
   async deleteTourById(@Param('id') id: string): Promise<Tour> {
     return this.toursService.deleteTourById(id);
   }
 
-  // Получение всех туров (GET /tours)
   @Get()
   getTours(): Promise<Tour[]> {
     return this.toursService.getAllTours();
   }
 
-  // Получение тура по id (GET /tours/:id)
   @Get(':id')
   getTourById(@Param('id') id: string): Promise<Tour> {
     return this.toursService.getTourById(id);
+  }
+
+  @Get('search')
+  async searchToursByName(@Query('name') name: string): Promise<Tour[]> {
+    return this.toursService.getToursByName(name);
   }
 }

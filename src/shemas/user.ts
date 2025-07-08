@@ -11,5 +11,6 @@ export class User implements IUser {
   @Prop({ required: true }) psw: string;
   @Prop() cardNumber: string;
   @Prop() email: string;
+  @Prop() role: string;
 }
 export const UserSchema = SchemaFactory.createForClass(User);

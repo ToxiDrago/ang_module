@@ -33,4 +33,10 @@ export class OrdersService {
   getGroupOrders$() {
     return this.groupOrdersSubject.asObservable();
   }
+
+  getOrdersPaged(page: number, limit: number): Observable<IOrder[]> {
+    return this.http.get<IOrder[]>(
+      `${this.apiUrl}?page=${page}&limit=${limit}`
+    );
+  }
 }

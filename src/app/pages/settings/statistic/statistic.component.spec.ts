@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientModule } from '@angular/common/http';
+import { TableModule } from 'primeng/table';
 
 import { StatisticComponent } from './statistic.component';
 
@@ -8,10 +10,12 @@ describe('StatisticComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ StatisticComponent ]
-    })
-    .compileComponents();
+      imports: [HttpClientModule, TableModule],
+      declarations: [StatisticComponent],
+    }).compileComponents();
+  });
 
+  beforeEach(() => {
     fixture = TestBed.createComponent(StatisticComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

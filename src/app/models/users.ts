@@ -4,6 +4,7 @@ export interface IUser {
   psw: string;
   cardNumber?: string;
   email?: string;
+  role?: string;
 }
 
 export interface IStatisticUser {

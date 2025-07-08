@@ -8,6 +8,7 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { forkJoin, fromEvent, Subscription } from 'rxjs';
 import { TicketService } from '../../../services/ticket/ticket.service';
 import { OrdersService } from '../../../services/orders/orders.service';
+import { ToursHttpService } from '../../../services/tours/tours-http.service';
 
 @Component({
   selector: 'app-ticket-item',
@@ -28,13 +29,18 @@ export class TicketItemComponent implements OnInit {
   private ticketSearchSubsc: Subscription;
   private ticketRestSub: Subscription;
   searchTypes = [1, 2, 3];
+  uploadTour: any = {};
+  selectedFile: File | null = null;
+  allTours: ITour[] = [];
+  foundTours: ITour[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private ticketStorage: TicketStorageService,
     private authService: AuthService,
     private ticketService: TicketService,
-    private ordersService: OrdersService
+    private ordersService: OrdersService,
+    private toursHttp: ToursHttpService // добавлен сервис
   ) {}
 
   ngOnInit(): void {
@@ -55,6 +61,10 @@ export class TicketItemComponent implements OnInit {
       birthday: new FormControl(''),
       age: new FormControl(22),
       citizenship: new FormControl(''),
+    });
+
+    this.toursHttp.getTours().subscribe((tours) => {
+      this.allTours = tours;
     });
 
     forkJoin([
@@ -147,5 +157,46 @@ export class TicketItemComponent implements OnInit {
           this.tourLocations
         );
       });
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+    }
+  }
+
+  onUploadTour() {
+    if (
+      !this.uploadTour.name ||
+      !this.uploadTour.description ||
+      !this.uploadTour.price ||
+      !this.selectedFile
+    ) {
+      return;
+    }
+    const formData = new FormData();
+    formData.append('name', this.uploadTour.name);
+    formData.append('description', this.uploadTour.description);
+    formData.append('price', this.uploadTour.price);
+    formData.append('file', this.selectedFile);
+    this.toursHttp.uploadTour(formData).subscribe({
+      next: (tour) => {
+        alert('Тур успешно загружен!');
+        this.uploadTour = {};
+        this.selectedFile = null;
+        // обновить список туров, если нужно
+        this.ticketService.getTickets().subscribe();
+      },
+      error: (err) => {
+        alert('Ошибка загрузки тура: ' + (err.error?.message || err.message));
+      },
+    });
+  }
+
+  searchToursByName(name: string) {
+    this.toursHttp.searchToursByName(name).subscribe((tours) => {
+      this.foundTours = tours;
+    });
   }
 }
