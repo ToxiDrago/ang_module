@@ -52,4 +52,10 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.page = 1;
     this.loadOrders();
   }
+
+  deleteOrder(id: string) {
+    if (confirm('Удалить заказ?')) {
+      this.orderService.deleteOrder(id).subscribe(() => this.loadOrders());
+    }
+  }
 }

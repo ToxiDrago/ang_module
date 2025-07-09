@@ -11,12 +11,14 @@
     class="mt-3"
     [options]="tourTypes"
     optionLabel="label"
-    (onChange)="changeTourType($event)">
+    (onChange)="changeTourType($event)"
+  >
   </p-dropdown>
 </div>
 
 <div class="mt-3">
-  <p-calendar appCanWrite
+  <p-calendar
+    appCanWrite
     (onSelect)="selectDate($event)"
     (onClearClick)="selectDate($event)"
     [showButtonBar]="true"
@@ -24,12 +26,12 @@
 </div>
 
 <div class="mt-3">
-<!--  <p-button appCanWrite-->
-<!--    label="Error"-->
-<!--    (onClick)="initRestError()"-->
-<!--  >-->
-<!--  </p-button>-->
-<!--  <button appCanWrite>Test btn</button>-->
+  <!--  <p-button appCanWrite-->
+  <!--    label="Error"-->
+  <!--    (onClick)="initRestError()"-->
+  <!--  >-->
+  <!--  </p-button>-->
+  <!--  <button appCanWrite>Test btn</button>-->
 </div>
 
 <div>
@@ -38,13 +40,27 @@
   <button (click)="addBasket()">Add basket</button>
 </div>
 
-<div class="mt-3">
-  <p-button
-    label="Refresh settings"
-    (onClick)="initSettingsData()"
-  >
-  </p-button>
+<div *ngIf="currentUser" class="mt-2">
+  <b>Пользователь:</b> {{ currentUser.login }}<br />
+  <span *ngIf="currentUser.email">Email: {{ currentUser.email }}</span
+  ><br />
+  <span *ngIf="currentUser.role">Роль: {{ currentUser.role }}</span>
+</div>
 
+<div *ngIf="basketItems.length > 0; else emptyBasket" class="mt-2">
+  <b>Корзина:</b>
+  <ul>
+    <li *ngFor="let item of basketItems">
+      ID: {{ item.id }} | Пользователь: {{ item.user?.login }}
+    </li>
+  </ul>
+</div>
+<ng-template #emptyBasket>
+  <div class="mt-2">Корзина пуста</div>
+</ng-template>
+
+<div class="mt-3">
+  <p-button label="Refresh settings" (onClick)="initSettingsData()"> </p-button>
 </div>
 
 <p-toast position="top-left"></p-toast>

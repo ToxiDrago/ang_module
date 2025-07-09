@@ -24,5 +24,8 @@
     <strong>Дата рождения:</strong> {{ order.birthDay }}<br />
     <strong>Карта:</strong> {{ order.cardNumber }}<br />
     <strong>ID:</strong> {{ order._id }}
+    <button pButton type="button" (click)="deleteOrder(order._id)">
+      Удалить
+    </button>
   </li>
 </ul>

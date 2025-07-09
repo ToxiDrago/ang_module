@@ -31,6 +31,7 @@ export class TicketItemComponent implements OnInit {
   searchTypes = [1, 2, 3];
   uploadTour: any = {};
   selectedFile: File | null = null;
+  filePreviewUrl: string | ArrayBuffer | null = null;
   allTours: ITour[] = [];
   foundTours: ITour[] = [];
 
@@ -77,7 +78,6 @@ export class TicketItemComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-    console.log(this.ticketSearch);
     if (!this.ticketSearch) {
       return;
     }
@@ -143,7 +143,6 @@ export class TicketItemComponent implements OnInit {
   }
 
   initSearchTour() {
-    console.log('initSearchTour');
     const type = Math.floor(Math.random() * this.searchTypes.length);
     if (this.ticketRestSub && !this.ticketRestSub.closed) {
       this.ticketRestSub.unsubscribe();
@@ -163,6 +162,14 @@ export class TicketItemComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       this.selectedFile = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.filePreviewUrl = reader.result;
+      };
+      reader.readAsDataURL(this.selectedFile);
+    } else {
+      this.selectedFile = null;
+      this.filePreviewUrl = null;
     }
   }
 
@@ -195,7 +202,12 @@ export class TicketItemComponent implements OnInit {
   }
 
   searchToursByName(name: string) {
-    this.toursHttp.searchToursByName(name).subscribe((tours) => {
+    const search = name.trim();
+    if (!search) {
+      this.foundTours = [];
+      return;
+    }
+    this.toursHttp.searchToursByName(search).subscribe((tours) => {
       this.foundTours = tours;
     });
   }

@@ -34,13 +34,11 @@ export class AuthorizationComponent implements OnInit {
     };
     this.authService.loginOnServer(user).subscribe(
       (data) => {
-        console.log('Login successful, token received:', data);
         this.authService.saveToken(data.access_token);
         this.messageService.add({
           severity: 'success',
           summary: 'Вы авторизованы!',
         });
-        console.log('About to navigate to tickets/ticket-list');
         this.router.navigate(['tickets', 'ticket-list']);
       },
       (err) => {

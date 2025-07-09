@@ -9,6 +9,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  Put,
 } from '@nestjs/common';
 import { ToursService } from '../../backend-services/tours.service';
 import { Tour } from '../../../shemas/tour';
@@ -49,6 +50,14 @@ export class ToursController {
           cb(null, uniqueSuffix + extname(file.originalname));
         },
       }),
+      fileFilter: (req, file, cb) => {
+        const allowed = ['.jpg', '.jpeg', '.png'];
+        const ext = extname(file.originalname).toLowerCase();
+        if (!allowed.includes(ext)) {
+          return cb(new Error('Только .jpg и .png файлы разрешены!'), false);
+        }
+        cb(null, true);
+      },
     })
   )
   async uploadTour(
@@ -57,7 +66,7 @@ export class ToursController {
   ): Promise<Tour> {
     const tourDto: TourDto = {
       ...body,
-      img: file ? file.filename : '',
+      img: file ? file.filename : 'default.jpg',
     };
     return this.toursService.createTour(tourDto);
   }
@@ -70,6 +79,14 @@ export class ToursController {
   @Delete(':id')
   async deleteTourById(@Param('id') id: string): Promise<Tour> {
     return this.toursService.deleteTourById(id);
+  }
+
+  @Put(':id')
+  async updateTourById(
+    @Param('id') id: string,
+    @Body() tourDto: TourDto
+  ): Promise<Tour> {
+    return this.toursService.updateTour(id, tourDto);
   }
 
   @Get()

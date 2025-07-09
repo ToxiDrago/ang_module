@@ -49,7 +49,6 @@ export class AuthService {
   }
 
   private auth(user: IUser, isRememberMe?: boolean) {
-    console.log('user', user);
     this.currentUser = user;
     this.accessService.initAccess(UserRules);
 
@@ -127,13 +126,11 @@ export class AuthService {
   }
 
   saveToken(token: string) {
-    console.log('Saving token:', token);
     localStorage.setItem(this.TOKEN_KEY, token);
   }
 
   getToken(): string | null {
     const token = localStorage.getItem(this.TOKEN_KEY);
-    console.log('Getting token:', token);
     return token;
   }
 
@@ -169,28 +166,17 @@ export class AuthService {
   isTokenExpired(): boolean {
     const token = this.getToken();
     if (!token) {
-      console.log('isTokenExpired: no token');
       return true;
     }
     try {
       const decoded: any = jwtDecode(token);
-      console.log('isTokenExpired: decoded token:', decoded);
       if (!decoded.exp) {
-        console.log('isTokenExpired: no exp field');
         return false;
       }
       const now = Math.floor(Date.now() / 1000);
-      console.log(
-        'isTokenExpired: current time:',
-        now,
-        'exp time:',
-        decoded.exp
-      );
       const isExpired = decoded.exp < now;
-      console.log('isTokenExpired: token expired?', isExpired);
       return isExpired;
     } catch (e) {
-      console.error('isTokenExpired: error decoding token:', e);
       return true;
     }
   }

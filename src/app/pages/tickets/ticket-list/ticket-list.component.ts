@@ -66,6 +66,8 @@ export class TicketListComponent implements OnInit {
 
   tours: ITour[] = [];
   selectedTour: ITour | null = null;
+  selectedFile: File | null = null;
+  filePreviewUrl: string | ArrayBuffer | null = null;
   isEditMode = false;
   showTourForm = false;
   tourForm: FormGroup = new FormGroup({
@@ -144,9 +146,6 @@ export class TicketListComponent implements OnInit {
           of(val).pipe(delay(Math.floor(Math.random() * (max - min + 1)) + min))
         ),
         // startWith('hi'),
-        tap((val) => {
-          console.log('pipe value tap');
-        }),
         skip(0)
         //  timeout(5000),
         //  take(2),
@@ -156,9 +155,7 @@ export class TicketListComponent implements OnInit {
         // reduce((acc, val) => acc + val, 0)
       )
       .subscribe(
-        (ev) => {
-          console.log('search val', ev);
-        },
+        (ev) => {},
         (err) => {
           console.log('err', err);
         }
@@ -184,16 +181,12 @@ export class TicketListComponent implements OnInit {
     //   console.log('forkJoin data', data)
     // });
     concat(this.userService.basket$, fromEventObserver, observer3).subscribe(
-      (data: any) => {
-        console.log('merge data', data);
-      }
+      (data: any) => {}
     );
 
     this.userService.basket$
       .pipe(buffer(this.inputForm.valueChanges))
-      .subscribe((data) => {
-        console.log('buffer', data);
-      });
+      .subscribe((data) => {});
   }
 
   loadTours() {
@@ -211,6 +204,9 @@ export class TicketListComponent implements OnInit {
 
   openAddTour() {
     this.isEditMode = false;
+    this.selectedTour = null;
+    this.selectedFile = null;
+    this.filePreviewUrl = null;
     this.tourForm.reset();
     this.showTourForm = true;
   }
@@ -218,6 +214,8 @@ export class TicketListComponent implements OnInit {
   openEditTour(tour: ITour) {
     this.isEditMode = true;
     this.selectedTour = tour;
+    this.selectedFile = null;
+    this.filePreviewUrl = null;
     this.tourForm.patchValue(tour);
     this.showTourForm = true;
   }
@@ -225,27 +223,91 @@ export class TicketListComponent implements OnInit {
   saveTour() {
     const tour = this.tourForm.value as ITour;
     if (this.isEditMode && this.selectedTour) {
-      this.toursHttp.updateTour(this.selectedTour.id, tour).subscribe(() => {
-        this.loadTours();
-        this.showTourForm = false;
-      });
+      const id = this.selectedTour._id || this.selectedTour.id;
+      if (!id) {
+        alert('Ошибка: не найден id тура для обновления!');
+        return;
+      }
+
+      if (this.selectedFile) {
+        // Если выбран файл, отправляем через FormData
+        const formData = new FormData();
+        formData.append('name', tour.name);
+        formData.append('description', tour.description);
+        formData.append('tourOperator', tour.tourOperator);
+        formData.append('price', tour.price);
+        formData.append('type', tour.type || '');
+        formData.append('date', tour.date || '');
+        formData.append('file', this.selectedFile);
+
+        this.toursHttp.uploadTour(formData).subscribe(() => {
+          this.loadTours();
+          this.showTourForm = false;
+          this.selectedFile = null;
+          this.filePreviewUrl = null;
+        });
+      } else {
+        // Если файл не выбран, отправляем обычный JSON
+        this.toursHttp.updateTour(id, tour).subscribe(() => {
+          this.loadTours();
+          this.showTourForm = false;
+        });
+      }
     } else {
-      this.toursHttp.addTour(tour).subscribe(() => {
-        this.loadTours();
-        this.showTourForm = false;
-      });
+      if (this.selectedFile) {
+        // Если выбран файл, отправляем через FormData
+        const formData = new FormData();
+        formData.append('name', tour.name);
+        formData.append('description', tour.description);
+        formData.append('tourOperator', tour.tourOperator);
+        formData.append('price', tour.price);
+        formData.append('type', tour.type || '');
+        formData.append('date', tour.date || '');
+        formData.append('file', this.selectedFile);
+
+        this.toursHttp.uploadTour(formData).subscribe(() => {
+          this.loadTours();
+          this.showTourForm = false;
+          this.selectedFile = null;
+          this.filePreviewUrl = null;
+        });
+      } else {
+        // Если файл не выбран, отправляем обычный JSON
+        this.toursHttp.addTour(tour).subscribe(() => {
+          this.loadTours();
+          this.showTourForm = false;
+        });
+      }
     }
   }
 
   deleteTour(tour: ITour) {
+    const id = tour._id || tour.id;
+    if (!id) {
+      alert('Ошибка: не найден id тура для удаления!');
+      return;
+    }
     if (confirm('Удалить тур?')) {
-      this.ticketService.ticketServiceRest
-        .deleteTours()
-        .subscribe(() => this.loadTours());
+      this.toursHttp.deleteTour(id).subscribe(() => this.loadTours());
     }
   }
 
   goToTicket(item: ITour) {
     this.router.navigate([`/tickets/ticket/${item.id}`]);
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.filePreviewUrl = reader.result;
+      };
+      reader.readAsDataURL(this.selectedFile);
+    } else {
+      this.selectedFile = null;
+      this.filePreviewUrl = null;
+    }
   }
 }

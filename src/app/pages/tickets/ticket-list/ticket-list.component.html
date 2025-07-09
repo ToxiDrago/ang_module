@@ -41,11 +41,18 @@
     <input pInputText formControlName="description" placeholder="Описание" />
     <input pInputText formControlName="tourOperator" placeholder="Оператор" />
     <input pInputText formControlName="price" placeholder="Цена" />
-    <input
-      pInputText
-      formControlName="img"
-      placeholder="Картинка (имя файла)"
-    />
+    <div class="mt-2">
+      <label>Картинка:</label>
+      <input
+        type="file"
+        (change)="onFileSelected($event)"
+        accept=".jpg,.jpeg,.png"
+      />
+      <div *ngIf="selectedFile" class="mt-2">
+        <b>Предпросмотр:</b><br />
+        <img [src]="filePreviewUrl" class="w-50 h-50" *ngIf="filePreviewUrl" />
+      </div>
+    </div>
     <input pInputText formControlName="type" placeholder="Тип" />
     <input pInputText formControlName="date" placeholder="Дата" />
     <button pButton type="submit" label="Сохранить"></button>

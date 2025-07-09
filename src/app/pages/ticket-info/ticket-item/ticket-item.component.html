@@ -11,7 +11,12 @@
   styleClass="p-card-shadow col-3"
 >
   <ng-template pTemplate="header">
-    <img alt="Card" src="/assets/img/{{ ticket.img }}" />
+    <img
+      alt="Card"
+      [src]="
+        ticket.img ? '/assets/img/' + ticket.img : '/assets/img/default.jpg'
+      "
+    />
   </ng-template>
   <p>{{ ticket.description }}</p>
 </p-card>
@@ -121,6 +126,10 @@
     </div>
     <div class="mt-2">
       <input type="file" (change)="onFileSelected($event)" />
+      <div *ngIf="selectedFile" class="mt-2">
+        <b>Предпросмотр:</b><br />
+        <img [src]="filePreviewUrl" class="w-50 h-50" *ngIf="filePreviewUrl" />
+      </div>
     </div>
     <div class="mt-2">
       <button
